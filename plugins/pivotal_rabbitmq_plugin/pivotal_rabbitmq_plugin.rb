@@ -33,7 +33,7 @@ require 'uri'
 module NewRelic
   module RabbitMQPlugin
     class Agent < NewRelic::Plugin::Agent::Base
-      agent_guid 'com.pivotal.newrelic.plugin.rabbitmq'
+      agent_guid 'com.pivotal.newrelic.plugin.rabbitmq.testPlugin'
       agent_version '1.0.5'
       agent_config_options :management_api_url, :debug
       agent_human_labels('RabbitMQ') do
@@ -62,6 +62,10 @@ module NewRelic
           report_metric_check_debug 'Node/Memory Used', 'bytes', node_info('mem_used')
 
           report_queues
+
+          report_exchanges
+
+          report_exchanges_bindings_source
 
         rescue Exception => e
           $stderr.puts "[RabbitMQ] Exception while processing metrics. Check configuration."
@@ -165,6 +169,59 @@ module NewRelic
           report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Consumers/Active', 'consumers', q['active_consumers']
         end
       end
+
+      def publish_in_rate
+        exchange_rate_for 'in'
+      end
+
+      def publish_out_rate
+        exchange_rate_for 'out'
+      end
+
+      def exchange_rate_for(type)
+        msg_stats = rmq_manager.exchange['message_stats']
+
+        if msg_stats_.is_a?(Hash)
+          details = msg_stats["#{type}_details"]
+          details ? details ['rate'] : 0
+        else
+          0
+        end
+      end
+
+      def report_exchanges
+        return unless rmq_manager.exchanges.length > 0
+        rmq_manager.exchanges.each do |e|
+          next if e['name'].start_with?('amq')
+          next if e['name'] == ''
+          puts "report_exchanges:"
+          puts e
+          puts e['message_stats']
+          puts e['message_stats']['publish_in_details']
+          puts e['message_stats']['publish_in_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/In', 'messages/sec', e['message_stats']['publish_in_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out', 'messages/sec', e['message_stats']['publish_out_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Messages/Total', 'messages', e['message_stats']['publish_out']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out', 'messages/sec', e['message_stats']['publish_out_details']['rate']
+        end
+      end
+
+      def report_exchanges_bindings_source
+        return unless rmq_manager.exchanges.length > 0
+        rmq_manager.exchanges.each do |e|
+          next if e['name'].start_with?('amq')
+          next if e['name'] == ''
+          puts "report_exchanges_bindings_source"
+          puts "**** GETTING QUEUES ****"
+          puts e['vhost']
+          puts e['name']
+          body = rmq_manager.exchanges_bindings_source e['vhost'], e['name']
+          puts "***** GOT EM!! *******"
+          puts body.length
+          report_metric_check_debug 'Exchange'+ e['vhost'] + e['name'] + 'Queues/Total', 'queues/exchange', body.length
+        end
+      end
+
     end
 
     NewRelic::Plugin::Setup.install_agent :rabbitmq, self
