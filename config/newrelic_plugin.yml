@@ -13,7 +13,6 @@ newrelic:
   # Update with your New Relic account license key:
   #
   license_key: '<%= ENV["NEWRELIC_LICENSE_KEY"] %>'
-  # license_key: '05ba8790ac3963deee0e88ca4f2723d1af132b92'
   #
   # Set to '1' for verbose output, remove for normal output.
   # All output goes to stdout/stderr.
