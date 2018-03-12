@@ -31,6 +31,7 @@ require 'rabbitmq_manager'
 require 'uri'
 
 module NewRelic
+  $venue = ARGV[0]
   module RabbitMQPlugin
     class Agent < NewRelic::Plugin::Agent::Base
       agent_guid 'com.pivotal.newrelic.plugin.rabbitmq.testPlugin'
@@ -47,19 +48,19 @@ module NewRelic
             puts "[RabbitMQ] Debug Mode On: Metric data will not be sent to new relic"
           end
 
-          report_metric_check_debug 'Queued Messages/Ready', 'messages', queue_size_ready
-          report_metric_check_debug 'Queued Messages/Unacknowledged', 'messages', queue_size_unacknowledged
+          report_metric_check_debug 'Queued Messages/Ready' + $venue, 'messages', queue_size_ready
+          report_metric_check_debug 'Queued Messages/Unacknowledged' + $venue, 'messages', queue_size_unacknowledged
 
-          report_metric_check_debug 'Message Rate/Acknowledge', 'messages/sec', ack_rate
-          report_metric_check_debug 'Message Rate/Confirm', 'messages/sec', confirm_rate
-          report_metric_check_debug 'Message Rate/Deliver', 'messages/sec', deliver_rate
-          report_metric_check_debug 'Message Rate/Publish', 'messages/sec', publish_rate
-          report_metric_check_debug 'Message Rate/Return', 'messages/sec', return_unroutable_rate
+          report_metric_check_debug 'Message Rate/Acknowledge' + $venue, 'messages/sec', ack_rate
+          report_metric_check_debug 'Message Rate/Confirm' + $venue, 'messages/sec', confirm_rate
+          report_metric_check_debug 'Message Rate/Deliver' + $venue, 'messages/sec', deliver_rate
+          report_metric_check_debug 'Message Rate/Publish' + $venue, 'messages/sec', publish_rate
+          report_metric_check_debug 'Message Rate/Return' + $venue, 'messages/sec', return_unroutable_rate
 
-          report_metric_check_debug 'Node/File Descriptors', 'file_descriptors', node_info('fd_used')
-          report_metric_check_debug 'Node/Sockets', 'sockets', node_info('sockets_used')
-          report_metric_check_debug 'Node/Erlang Processes', 'processes', node_info('proc_used')
-          report_metric_check_debug 'Node/Memory Used', 'bytes', node_info('mem_used')
+          report_metric_check_debug 'Node/File Descriptors' + $venue, 'file_descriptors', node_info('fd_used')
+          report_metric_check_debug 'Node/Sockets' + $venue , 'sockets', node_info('sockets_used')
+          report_metric_check_debug 'Node/Erlang Processes' + $venue, 'processes', node_info('proc_used')
+          report_metric_check_debug 'Node/Memory Used' + $venue, 'bytes', node_info('mem_used')
 
           report_queues
 
@@ -162,11 +163,11 @@ module NewRelic
         return unless rmq_manager.queues.length > 0
         rmq_manager.queues.each do |q|
           next if q['name'].start_with?('amq.gen')
-          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Messages/Ready', 'message', q['messages_ready']
-          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Memory', 'bytes', q['memory']
-          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Messages/Total', 'message', q['messages']
-          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Consumers/Total', 'consumers', q['consumers']
-          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Consumers/Active', 'consumers', q['active_consumers']
+          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Messages/Ready' + $venue, 'message', q['messages_ready']
+          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Memory' + $venue, 'bytes', q['memory']
+          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Messages/Total' + $venue, 'message', q['messages']
+          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Consumers/Total' + $venue, 'consumers', q['consumers']
+          report_metric_check_debug 'Queue' + q['vhost'] + q['name'] + '/Consumers/Active' + $venue, 'consumers', q['active_consumers']
         end
       end
 
@@ -199,10 +200,10 @@ module NewRelic
           puts e['message_stats']
           puts e['message_stats']['publish_in_details']
           puts e['message_stats']['publish_in_details']['rate']
-          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/In', 'messages/sec', e['message_stats']['publish_in_details']['rate']
-          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out', 'messages/sec', e['message_stats']['publish_out_details']['rate']
-          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Messages/Total', 'messages', e['message_stats']['publish_out']
-          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out', 'messages/sec', e['message_stats']['publish_out_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/In' + $venue, 'messages/sec', e['message_stats']['publish_in_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out' + $venue, 'messages/sec', e['message_stats']['publish_out_details']['rate']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Messages/Total' + $venue, 'messages', e['message_stats']['publish_out']
+          report_metric_check_debug 'Exchange' + e['vhost'] + e['name'] + '/Exchanges/Out' + $venue, 'messages/sec', e['message_stats']['publish_out_details']['rate']
         end
       end
 
@@ -218,7 +219,7 @@ module NewRelic
           body = rmq_manager.exchanges_bindings_source e['vhost'], e['name']
           puts "***** GOT EM!! *******"
           puts body.length
-          report_metric_check_debug 'Exchange'+ e['vhost'] + e['name'] + 'Queues/Total', 'queues/exchange', body.length
+          report_metric_check_debug 'Exchange'+ e['vhost'] + e['name'] + 'Queues/Total' + $venue, 'queues/exchange', body.length
         end
       end
 
