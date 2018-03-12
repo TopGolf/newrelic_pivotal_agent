@@ -31,13 +31,13 @@ require 'rabbitmq_manager'
 require 'uri'
 
 module NewRelic
-  $venue = ARGV[0]
+  $venue = ENV["VENUE_NAME"]
   module RabbitMQPlugin
     class Agent < NewRelic::Plugin::Agent::Base
-      agent_guid 'com.pivotal.newrelic.plugin.rabbitmq.testPlugin'
+      agent_guid 'com.pivotal.newrelic.plugin.rabbitmq.topgolf'
       agent_version '1.0.5'
       agent_config_options :management_api_url, :debug
-      agent_human_labels('RabbitMQ') do
+      agent_human_labels('Topgolf') do
         uri = URI.parse(management_api_url)
         "#{uri.host}:#{uri.port}"
       end

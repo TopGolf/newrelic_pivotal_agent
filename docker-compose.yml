@@ -1,0 +1,10 @@
+version: '3.1'
+
+services:
+  agent:
+    build: .
+    image: topgolf/newrelic-pivotal-agent
+    environment:
+      VENUE_NAME: localhost
+#      RABBITMQ_URL: Set environment variable to your rabbitmq url (i.e. http://rabbitmq:rabbitmq@10.1.36.235:15672)
+#      NEWRELIC_LICENSE_KEY: Set environment variable to your license key (i.e. 05ba8790ac3963deee0e88ca4f2723d2af132b92)

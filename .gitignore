@@ -1,4 +1,4 @@
 /Gemfile.lock
-/config/newrelic_plugin.yml
 /plugins/*/Gemfile.lock
-/plugins/*/config/newrelic_plugin.yml
+.idea
+newrelic_pivotal_agent.iml
